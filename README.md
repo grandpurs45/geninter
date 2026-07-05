@@ -18,7 +18,23 @@ Cette commande sert surtout a tester l'image Docker sur un poste de developpemen
 ### Prerequis
 
 - Docker Engine et Docker Compose v2 installes.
-- Le port `8080` libre sur la machine.
+- Un port libre sur la machine, par defaut `8080`.
+
+### Port local
+
+Le fichier `docker-compose.yml` lit la variable `APP_PORT`.
+
+Exemple avec le port `8081` :
+
+```bash
+APP_PORT=8081 docker compose up --build
+```
+
+Ou avec un fichier `.env` :
+
+```env
+APP_PORT=8081
+```
 
 ### Demarrage
 
@@ -26,7 +42,7 @@ Cette commande sert surtout a tester l'image Docker sur un poste de developpemen
 docker compose up --build
 ```
 
-Puis ouvrir `http://localhost:8080/`.
+Puis ouvrir `http://localhost:8080/`, ou le port choisi avec `APP_PORT`.
 
 ### Arret
 
@@ -43,6 +59,8 @@ docker compose up -d --build
 ## Production Docker avec Traefik
 
 Le fichier `docker-compose.prod.yml` est prevu pour un serveur ou Traefik tourne deja comme reverse proxy Docker.
+
+En production Traefik, ne pas lancer le fichier local `docker-compose.yml`, car il publie un port hote via `APP_PORT`. Utiliser uniquement `docker-compose.prod.yml`, qui ne publie pas de port et laisse Traefik router le trafic.
 
 ### Prerequis serveur
 
@@ -99,6 +117,18 @@ docker compose -f docker-compose.prod.yml --env-file .env up -d --build
 ```
 
 Le conteneur expose Apache en interne sur le port `80`. Traefik route le trafic HTTPS via les labels du service.
+
+Si vous voyez une erreur du type `Bind for 0.0.0.0:8080 failed: port is already allocated`, c'est que le Compose local a ete lance ou que le port `APP_PORT` est deja utilise. Pour Traefik, relancer avec :
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+```
+
+Pour un test local sans Traefik, choisir un autre port :
+
+```bash
+APP_PORT=8081 docker compose up -d --build
+```
 
 ### Mise a jour
 
